@@ -8,7 +8,7 @@ const invoiceSchema = new Schema({
 	Booking_id : {
 		$ref: booking,
 		$id: ObjectId
-	}
+	},
 	invoiceDate: {
 		type: Date,
 		required: true

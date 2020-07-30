@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const customerSchema = new Schema({
 	_id: {
 		type: Schema.Types.ObjectId
-	}
+	},
 	firstName: {
 		type: String,
 		required: true
