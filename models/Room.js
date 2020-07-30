@@ -2,7 +2,14 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const roomSchema = new Schema({
-	placeholder: String
+	_id: {
+		type: Schema.Types.ObjectId
+	},
+	Room_Type_id: {
+		$ref: roomtype,
+		$id: ObjectId
+	}
+
 })
 
 const Room = mongoose.model('room', roomSchema);
