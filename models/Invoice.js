@@ -2,8 +2,14 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const invoiceSchema = new Schema({
-	invoiceDate: Date,
-	total: Number
+	invoiceDate: {
+		type: Date,
+		required: true
+	}
+	total: {
+		type: Number,
+		required: true
+	}
 })
 
 const Invoice = mongoose.model('invoice', invoiceSchema);
