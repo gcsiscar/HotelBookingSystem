@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const roomSchema = new Schema({
 	_id: Schema.Types.ObjectId,
-	Room_Type_id: {
+	Room_Type: {
 		type: Schema.Types.ObjectId,
 		ref: 'RoomType'
 	}
