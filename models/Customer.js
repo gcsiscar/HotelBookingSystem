@@ -2,9 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const customerSchema = new Schema({
-	_id: {
-		type: Schema.Types.ObjectId
-	},
+	_id: Schema.Types.ObjectId,
 	firstName: {
 		type: String,
 		required: true
@@ -19,6 +17,6 @@ const customerSchema = new Schema({
 	}
 })
 
-const Customer = mongoose.model('customer', customerSchema);
+const Customer = mongoose.model('Customer', customerSchema);
 
 module.exports = Customer;

@@ -2,9 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const roomtypeSchema = new Schema({
-	_id: {
-		type: Schema.Types.ObjectId
-	},
+	_id: Schema.Types.ObjectId,
 	typeName: {
 		type: String,
 		required: true
@@ -15,6 +13,6 @@ const roomtypeSchema = new Schema({
 	}
 })
 
-const RoomType = mongoose.model('roomtype', roomtypeSchema);
+const RoomType = mongoose.model('RoomType', roomtypeSchema);
 
 module.exports = RoomType;

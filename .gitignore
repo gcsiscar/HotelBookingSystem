@@ -1,3 +1,4 @@
 node_modules
 test
-models/User.js
+models_test
+database.js

@@ -2,12 +2,10 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const invoiceSchema = new Schema({
-	_id: {
-		type: Schema.Types.ObjectId
-	},
+	_id: Schema.Types.ObjectId,
 	Booking_id : {
-		$ref: booking,
-		$id: ObjectId
+		type: Schema.Types.ObjectId,
+		ref: 'Booking',
 	},
 	invoiceDate: {
 		type: Date,

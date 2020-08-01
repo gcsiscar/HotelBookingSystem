@@ -2,16 +2,14 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const roomSchema = new Schema({
-	_id: {
-		type: Schema.Types.ObjectId
-	},
+	_id: Schema.Types.ObjectId,
 	Room_Type_id: {
-		$ref: roomtype,
-		$id: ObjectId
+		type: Schema.Types.ObjectId,
+		ref: 'RoomType'
 	}
 
 })
 
-const Room = mongoose.model('room', roomSchema);
+const Room = mongoose.model('Room', roomSchema);
 
 module.exports = Room;

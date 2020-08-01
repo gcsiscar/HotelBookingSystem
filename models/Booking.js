@@ -2,16 +2,14 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const bookingSchema = new Schema({
-	_id: {
-		type: Schema.Types.ObjectId
-	},
+	_id: Schema.Types.ObjectId,
 	Customer_id: {
-		$ref: customer,
-   		$id: ObjectId
-	},
+		type: Schema.Types.ObjectId,
+		ref: 'Customer',
+	}
 	Room_id: {
-		$ref: room,
-		$id: ObectId,
+		type: Schema.Types.ObjectId;
+		ref: 'Room',
 	},
 	checkInDate: {
 		type: Date,
@@ -23,6 +21,6 @@ const bookingSchema = new Schema({
 	}
 })
 
-const Booking = mongoose.model('booking', bookingSchema);
+const Booking = mongoose.model('Booking', bookingSchema);
 
 module.exports = Booking;
