@@ -4,15 +4,19 @@
   "description": "",
   "main": "app.js",
   "scripts": {
+    "start": "node app.js",
+    "server": "nodemon app.js",
     "test": "mocha --timeout 100000"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "express": "^4.17.1",
     "mongoose": "^5.9.26"
   },
   "devDependencies": {
-    "mocha": "^8.0.1"
+    "mocha": "^8.0.1",
+    "nodemon": "^2.0.4"
   }
 }
