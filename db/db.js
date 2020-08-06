@@ -8,12 +8,13 @@ const options = {
 
 mongoose.Promise = global.Promise;
 
-mongoose.connect(keys, options)
-    .catch(err => console.log(err));
-
-mongoose.connection.once('open', () => {
+module.exports = async () => {
+    try {
+        await mongoose.connect(keys, options);
         console.log('Connected to database');
-    })
-    .on('error', err => console.log(err));
+    } catch (e) {
+        console.log(e);
+    };
 
-module.exports = mongoose;
+    mongoose.connection.on('error', err => console.log(err));
+};
