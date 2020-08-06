@@ -3,14 +3,14 @@ const Schema = mongoose.Schema;
 
 const bookingSchema = new Schema({
 	_id: Schema.Types.ObjectId,
-	User: {
+	user: {
 		type: Schema.Types.ObjectId,
 		ref: 'User',
 	},
-	Room: {
-		type: Schema.Types.ObjectId,
-		ref: 'Room',
-	},
+	// Room: {
+	// 	type: Schema.Types.ObjectId,
+	// 	ref: 'Room',
+	// },
 	checkInDate: {
 		type: Date,
 		required: true
