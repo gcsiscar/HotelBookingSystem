@@ -13,11 +13,11 @@ const bookingSchema = new Schema({
 	// },
 	checkInDate: {
 		type: Date,
-		required: true
+		required: [true, 'Please specify a date']
 	},
 	checkOutDate: {
 		type: Date,
-		required: true
+		required: [true, 'Please specify a date']
 	}
 })
 

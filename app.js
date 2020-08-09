@@ -29,9 +29,14 @@ app.use(session({
     resave: false,
     saveUninitialized: true,
     store: new MongoStore({ mongooseConnection: mongoose.connection })
-}))
+}));
+
 
 app.use('/api', routes);
+
+app.use((err, req, res, next) => {
+	res.status(400).json({ error: err.message})
+});
 
 const PORT = process.env.PORT || 5000;
 
