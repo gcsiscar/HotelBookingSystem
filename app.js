@@ -3,22 +3,8 @@ const express = require('express');
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
 
-const routes = require('./routes/routes');
-
-const keys = require('./config/keys').MongoURI;
-
-const options = {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}
-
-mongoose.Promise = global.Promise;
-
-mongoose.connect(keys, options)
-	.then(() => console.log('Connected to the database'))
-	.catch(err => console.log(err));
-	
-mongoose.connection.on('error', err => console.log(err));
+const db = require('./db');
+// const seed = require('./models/seed');
 
 const app = express();
 
@@ -31,11 +17,12 @@ app.use(session({
     store: new MongoStore({ mongooseConnection: mongoose.connection })
 }));
 
+const routes = require('./routes/routes');
 
 app.use('/api', routes);
 
 app.use((err, req, res, next) => {
-	res.status(400).json({ error: err.message})
+    res.status(400).json({ error: err.message })
 });
 
 const PORT = process.env.PORT || 5000;
