@@ -1,16 +1,30 @@
-const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
+
 const User = require('../models/User');
 
 module.exports = {
+    add: (req, res, next) => {
+        const { name, email, password, password2 } = req.body;
 
-    dashBoard: (req, res, next) => {
-        if (req.session.isOnline) {
-            return res.status(200).json({ msg: 'Welcome', user_id: req.session.user_id, session_id: req.sessionID });
+        if (password !== password2) {
+            return res.status(400).json({ error: 'Passwords does not match' });
         }
 
-        return res.status(401).json({ error: 'Unathorized Access, Log in First' });
-    },
+        User.findOne({ email })
+            .then(result => {
+                if (result) return res.status(400).json({ error: 'Email already exists' });
 
+                User.create({
+                        name,
+                        email,
+                        password
+                    })
+                    .then(() => res.status(201).json({ msg: 'Registered Successfully' }))
+                    .catch(next);
+            })
+            .catch(next);
+    },
+    
     find: (req, res, next) => {
         User.find()
             .select('name email -_id')
@@ -22,7 +36,7 @@ module.exports = {
     },
 
     findById: (req, res, next) => {
-        const { id } = req.params
+        const id = req.user._id;
 
         User.findById(id)
             .select('name email')
@@ -37,14 +51,14 @@ module.exports = {
         const { id } = req.params;
 
         User.findByIdAndDelete(id)
-            .then(() => res.status(201).json({ success: 'Successfully Deleted' }))
+            .then(() => res.status(201).json({ msg: 'Successfully Deleted' }))
             .catch(next);
     },
 
     findByIdAndUpdate: (req, res, next) => {
         const { id } = req.params;
         User.findByIdAndUpdate(id, req.body, { new: true })
-            .then(() => res.status(201).json({ success: 'Successfully Updated' }))
+            .then(() => res.status(201).json({ msg: 'Successfully Updated' }))
             .catch(next);
     },
 
@@ -52,52 +66,20 @@ module.exports = {
         const { email, password } = req.body;
 
         User.findOne({ email, password })
-            .then(user => {
-                if (!user) return res.status(400).json({ error: 'Invalid Credentials' });
-
-                req.session.user_id = user._id;
-                req.session.isOnline = true;
-
-                return res.status(200).json({ success: 'Log In Successfull' });
-            })
-            .catch(next);
-    },
-
-    logout: (req, res, next) => {
-        if (!req.session.isOnline) {
-            return res.json({ msg: 'Already Log Out' })
-        }
-
-        req.session.destroy(() => {
-            return res.status(200).json({ success: 'Log out Successfull' })
-        });
-    },
-
-
-    register: (req, res, next) => {
-        const { name, email, password, password2 } = req.body;
-
-        if (password !== password2) {
-            return res.status(400).json({ error: 'Passwords does not match' });
-        }
-
-        User.findOne({ email })
             .then(result => {
-                if (result) {
-                    return res.status(400).json({ error: 'Email already exists' });
-                }
+                if (!result) return res.status(400).json({ error: 'Invalid Credentials' });
 
-                User.create({
-                        _id: new mongoose.Types.ObjectId(),
-                        name,
-                        email,
-                        password
-                    })
-                    .then(() => res.status(201).json({ success: 'Registered Successfully' }))
-                    .catch(next);
+                const user = {
+                    _id: result._id
+                };
+
+                const token = jwt.sign(user, 'secret');
+
+                return res.status(200).json({ msg: 'Log In Successfully', token });
             })
             .catch(next);
     },
+
 
 
 }

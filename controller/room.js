@@ -6,15 +6,13 @@ module.exports = {
         Room.find()
             .select('name bookings.startDate bookings.endDate -_id')
             .then(rooms => {
-                if(!rooms) throw new Error('No bookings yet');
+                if(!rooms) return res.status(200).json({msg: 'No bookings yet'});
                 return res.status(200).json(rooms)
             })
             .catch(next)
     },
 
     add: (req, res, next) => {
-        // determines whether the two date ranges overlap
-        // (StartA <= EndB) and (EndA >= StartB)
 
         let { startDate, endDate } = req.body;
 
@@ -35,7 +33,7 @@ module.exports = {
         const update = {
             $addToSet: {
                 bookings: {
-                    user: req.session.user_id,
+                    name: req.user._id,
                     startDate,
                     endDate
                 }
@@ -56,5 +54,12 @@ module.exports = {
             })
             .catch(next);
     },
+
+    edit: (req, res, next) => {
+        const { startDate, endDate} = req.body;
+        const id = req.user._id;
+
+        
+    }
 
 }

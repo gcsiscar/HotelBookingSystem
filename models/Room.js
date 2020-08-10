@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const bookingSchema = new Schema({
 	// _id: Schema.Types.ObjectId,
-	user: {
+	user_id: {
 		type: Schema.Types.ObjectId,
 		ref: 'User',
 	},
