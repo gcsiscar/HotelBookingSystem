@@ -1,65 +1,75 @@
-const mongoose = require('mongoose');
-const Room = require('../models/Room');
+const mongoose = require("mongoose");
+const Room = require("../models/Room");
 
 module.exports = {
     find: (req, res, next) => {
+        const options = "name bookings.endDate bookings.startDate -_id";
+
         Room.find()
-            .select('name bookings.startDate bookings.endDate -_id')
-            .then(rooms => {
-                if(!rooms) return res.status(200).json({msg: 'No bookings yet'});
-                return res.status(200).json(rooms)
+            .populate("bookings.user_id", "email name -_id")
+            .select(options)
+            .then((rooms) => {
+                if (!rooms)
+                    return res.status(200).json({ msg: "No bookings yet" });
+                return res.status(200).json(rooms);
             })
-            .catch(next)
+            .catch(next);
     },
 
     add: (req, res, next) => {
+        const { startDate, endDate, id } = req.body;
 
-        let { startDate, endDate } = req.body;
+        const bookingId = new mongoose.Types.ObjectId();
 
-        startDate = new Date(startDate).toUTCString();
-        endDate = new Date(endDate).toUTCString();
+        const newStartDate = new Date(`${startDate} 08:00`);
+        const newEndDate = new Date(`${endDate} 08:00`);
+
+        const duration = newEndDate.getDate() - newStartDate.getDate();
 
         const query = {
             bookings: {
                 $not: {
                     $elemMatch: {
-                        startDate: { $lte: endDate},
-                        endDate: { $gte: startDate}
-                    }
-                }
-            }
+                        startDate: { $lte: endDate },
+                        endDate: { $gte: startDate },
+                    },
+                },
+            },
         };
 
         const update = {
             $addToSet: {
                 bookings: {
-                    name: req.user._id,
-                    startDate,
-                    endDate
-                }
-            }
+                    _id: bookingId,
+                    user_id: id,
+                    startDate: newStartDate,
+                    endDate: newEndDate,
+                    duration,
+                },
+            },
         };
 
         const options = {
             new: true,
             useFindAndModify: false,
-            runValidators: true
+            runValidators: true,
         };
 
-
         Room.findOneAndUpdate(query, update, options)
-            .then(result => {
-                if(!result) throw new Error('No rooms available');
-                return res.status(201).json(result);
+            .populate("bookings.user_id", "email name -_id")
+            .then((result) => {
+                if (!result)
+                    return res
+                        .status(400)
+                        .json({ error: "No rooms available" });
+
+                const { name, bookings } = result;
+                const bookingDetails = bookings.id(bookingId);
+
+                return res
+                    .status(201)
+                    .json({ name: name, details: bookingDetails });
             })
             .catch(next);
     },
-
-    edit: (req, res, next) => {
-        const { startDate, endDate} = req.body;
-        const id = req.user._id;
-
-        
-    }
-
-}
+};
