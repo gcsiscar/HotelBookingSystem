@@ -3,9 +3,7 @@ require("./db/db");
 
 const express = require("express");
 const cors = require("cors");
-
-// const seed = require('./models/seed');
-
+// require('./models/seed');
 const server = express();
 
 server.use(cors());

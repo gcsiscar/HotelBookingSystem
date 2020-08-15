@@ -9,15 +9,16 @@ module.exports = {
             .populate("bookings.user_id", "email name -_id")
             .select(options)
             .then((rooms) => {
-                if (!rooms)
+                if (!rooms) {
                     return res.status(200).json({ msg: "No bookings yet" });
+                }
                 return res.status(200).json(rooms);
             })
             .catch(next);
     },
 
     add: (req, res, next) => {
-        const { startDate, endDate, id } = req.body;
+        const { startDate, endDate } = req.body;
 
         const bookingId = new mongoose.Types.ObjectId();
 
@@ -41,7 +42,7 @@ module.exports = {
             $addToSet: {
                 bookings: {
                     _id: bookingId,
-                    user_id: id,
+                    user_id: req.user._id,
                     startDate: newStartDate,
                     endDate: newEndDate,
                     duration,
@@ -69,6 +70,26 @@ module.exports = {
                 return res
                     .status(201)
                     .json({ name: name, details: bookingDetails });
+            })
+            .catch(next);
+    },
+
+    findById: (req, res, next) => {
+        const id = req.user._id;
+
+        const query = {
+            bookings: {
+                $elemMatch: {
+                    user_id: id,
+                },
+            },
+        };
+
+        Room.find(query)
+            .populate("bookings.user_id", "email name -_id")
+            .select("-_id -__v")
+            .then((result) => {
+                return res.status(200).json(result);
             })
             .catch(next);
     },

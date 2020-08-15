@@ -4,27 +4,24 @@ const User = require("../models/User");
 
 module.exports = {
     signUp: (req, res, next) => {
-        const { name, email, password, password2 } = req.body;
+        const { name, email, password, confirmPassword } = req.body;
 
-        if (password !== password2)
+        if (password !== confirmPassword) {
             return res.status(400).json({ error: "Passwords does not match" });
+        }
 
         User.findOne({ email })
             .then((result) => {
-                if (result)
-                    return res
-                        .status(400)
-                        .json({ error: "Email already exists" });
-
-                User.create({
-                    name,
-                    email,
-                    password,
-                })
-                    .then(() =>
-                        res.status(201).json({ msg: "Registered Successfully" })
-                    )
+                if (result) {
+                    return res.status(400).json({ error: "Email already exists" });
+                }
+                
+                User.create({ name, email, password, })
+                    .then(() => {
+                        return res.status(201).json({ msg: "Registered Successfully" })
+                    })
                     .catch(next);
+                
             })
             .catch(next);
     },
@@ -33,7 +30,10 @@ module.exports = {
         User.find()
             .select("name email")
             .then((users) => {
-                if (!users) return res.json({ msg: "There are no users yet" });
+                if (!users)
+                    return res
+                        .status(200)
+                        .json({ msg: "There are no users yet" });
                 return res.status(200).json(users);
             })
             .catch(next);
@@ -44,10 +44,9 @@ module.exports = {
 
         User.findOne({ email, password })
             .then((result) => {
-                if (!result)
-                    return res
-                        .status(400)
-                        .json({ error: "Email & Password does not match" });
+                if (!result) {
+                    return res.status(400).json({ error: "Email & Password does not match" });
+                }
 
                 const user = {
                     _id: result._id,
@@ -55,9 +54,7 @@ module.exports = {
 
                 const token = jwt.sign(user, "secret");
 
-                return res
-                    .status(200)
-                    .json({ msg: "Log In Successfully", token });
+                return res.status(200).json({ msg: "Log In Successfully", token });
             })
             .catch(next);
     },
