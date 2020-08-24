@@ -1,6 +1,13 @@
 class Auth {
   constructor() {
-    this.authenticated = false;
+    const cookies = document.cookie.split(";");
+    const tokenExist = cookies.some((row) => row.trim().startsWith("token="));
+
+    if (tokenExist) {
+      this.authenticated = true;
+    } else {
+      this.authenticated = false;
+    }
   }
 
   signIn(cb) {

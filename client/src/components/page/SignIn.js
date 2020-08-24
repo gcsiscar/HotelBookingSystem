@@ -1,20 +1,20 @@
 import React, { useState } from "react";
-import { useForm } from "react-hook-form";
 import axios from "axios";
+import { useForm } from "react-hook-form";
 import { Link, useHistory } from "react-router-dom";
 
-import Alerts from "./utils/Alerts";
-import ButtonSpin from "./utils/ButtonSpin";
-import Input from "./utils/Input";
+import Alerts from "../utils/Alerts";
+import ButtonSpin from "../utils/ButtonSpin";
+import Input from "../utils/Input";
 
-export default function SignUp() {
+export default function SignIn(props) {
 	return (
 		<div className="custom-center">
 			<div className="container h-100">
 				<div className="row h-100 align-items-center justify-content-center">
-					<div className="card card-signup col-4 mb-3">
+					<div className="card card-signin col-4 mb-3">
 						<div className="card-body">
-							<SignUpForm />
+							<Form {...props} />
 						</div>
 					</div>
 				</div>
@@ -23,15 +23,13 @@ export default function SignUp() {
 	);
 }
 
-const SignUpForm = () => {
+const Form = ({ auth }) => {
+	const { register, errors, handleSubmit } = useForm();
+
 	const [alert, setAlert] = useState({
-		status: null,
+		status: false,
 		message: "",
 		color: "",
-	});
-
-	const { register, errors, handleSubmit, setError } = useForm({
-		mode: "onChange",
 	});
 
 	const history = useHistory();
@@ -40,26 +38,23 @@ const SignUpForm = () => {
 	const onSubmit = handleSubmit(async (data) => {
 		setSpinner(true);
 		try {
-			await axios.post("/api/users/signUp", data);
+			const res = await axios.post("/api/users/signIn", data);
 			setSpinner(false);
-			history.push("/sign-in");
+			auth.signIn(() => {
+				document.cookie = `token=${res.data.token}`;
+				history.replace("/dashboard");
+			});
 		} catch (e) {
 			const errorResponse = e.response.data.message;
-
 			if (errorResponse) {
-				setError("email", {
-					type: "manual",
-					message: errorResponse,
-				});
-
 				setAlert({
-					status: "failure",
+					status: true,
 					message: errorResponse,
 					color: "danger",
 				});
 			} else {
 				setAlert({
-					status: "failure",
+					status: true,
 					message: e.message,
 					color: "danger",
 				});
@@ -67,36 +62,19 @@ const SignUpForm = () => {
 			setSpinner(false);
 		}
 	});
-
 	return (
-		<form onSubmit={onSubmit} className="form-signup" noValidate>
-			<h3 className="mb-3 card-title text-center">Sign Up</h3>
+		<form onSubmit={onSubmit} className="form-signin" noValidate>
+			<h3 className="mb-3 card-title text-center">Sign In</h3>
 			<div className="mb-3 form-label-group">
 				<Input
-					autofocus="true"
-					label="Name"
-					type="text"
-					id="name"
-					name="name"
-					placeholder="Name"
-					errors={errors.name}
-					ref={register({ required: "Name is required" })}
-				/>
-			</div>
-			<div className="mb-3 form-label-group">
-				<Input
+					autoFocus={true}
 					label="Email Address"
 					type="email"
 					id="email"
 					name="email"
 					placeholder="Email Address"
 					errors={errors.email}
-					ref={register({
-						required: "Email is required",
-						validate: (value) =>
-							value.includes("@") ||
-							"Email must include '@' symbol",
-					})}
+					ref={register({ required: "Email is required" })}
 				/>
 			</div>
 			<div className="mb-3 form-label-group">
@@ -107,16 +85,11 @@ const SignUpForm = () => {
 					name="password"
 					placeholder="Password"
 					errors={errors.password}
-					ref={register({
-						required: "Password is required",
-						validate: (value) =>
-							value.length >= 6 ||
-							"Password must be at least 6 characters",
-					})}
+					ref={register({ required: "Password is required" })}
 				/>
 			</div>
 			<div className="mb-3">
-				<ButtonSpin spinner={spinner} />
+				<ButtonSpin spinner={spinner} name="Sign In" />
 				<button
 					type="button"
 					className="btn btn-secondary btn-block custom-btn"
@@ -125,15 +98,18 @@ const SignUpForm = () => {
 					Cancel
 				</button>
 			</div>
-			<hr className="my-1"/>
+			<hr className="my-1" />
 			<div className="text-center">
-				<Link to="/sign-in" className="card-link mb-3">
-					Have an account? Sign in!
+				<Link
+					to="/sign-up"
+					className="card-link mb-3 text-decoration-none"
+				>
+					Create an Account
 				</Link>
 			</div>
 			<Alerts
-				status={alert.status}
 				setAlert={setAlert}
+				status={alert.status}
 				message={alert.message}
 				color={alert.color}
 			/>

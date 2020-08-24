@@ -3,12 +3,14 @@ import { useForm } from "react-hook-form";
 import axios from "axios";
 import { useHistory } from "react-router-dom";
 
-import Input from "./utils/Input";
-import Alerts from "./utils/Alerts";
-import auth from "./utils/auth";
+import Input from "../utils/Input";
+import Alerts from "../utils/Alerts";
+import ButtonSpin from "../utils/ButtonSpin";
+import Modal from "./Modal";
 
-export default function Dashboard() {
+export default function Dashboard({ auth }) {
 	const [update, setUpdate] = useState(0);
+	const [show, setShow] = useState(false);
 	const history = useHistory();
 	return (
 		<div className="container">
@@ -19,7 +21,7 @@ export default function Dashboard() {
 							Create A Booking
 						</div>
 						<div className="card-body">
-							<Booking setUpdate={setUpdate} update={update}/>
+							<Booking setUpdate={setUpdate} update={update} />
 						</div>
 					</div>
 				</div>
@@ -29,16 +31,22 @@ export default function Dashboard() {
 							Placeholder Header
 						</div>
 						<div className="card-body">
-							<Table update={update}/>
+							<Table update={update} />
 						</div>
 					</div>
+				</div>
+				<div>
+					<Modal show={show} close={setShow}>
+					<Booking/>
+					</Modal>
+					<button onClick={() => setShow(true)}>Click Me</button>
 				</div>
 				<div>
 					<button
 						onClick={() => {
 							auth.signOut(() => {
 								document.cookie =
-									"; expires = Thu, 01 Jan 1970 00:00:00 GMT";
+									"token=; expires = Thu, 01 Jan 1970 00:00:00 GMT";
 								history.push("/");
 							});
 						}}
@@ -51,8 +59,8 @@ export default function Dashboard() {
 	);
 }
 
-const Booking = ({update, setUpdate}) => {
-	const { register, handleSubmit, errors, watch } = useForm();
+const Booking = ({ update, setUpdate }) => {
+	const { register, handleSubmit, errors, watch, clearErrors } = useForm();
 
 	const watchStartDate = watch("startDate", Date.now());
 
@@ -62,42 +70,49 @@ const Booking = ({update, setUpdate}) => {
 		color: "",
 	});
 
+	const [spinner, setSpinner] = useState(false);
+
 	const onSubmit = handleSubmit(async (data) => {
+		setSpinner(true);
 		try {
+			const cookieValue = document.cookie
+				.split("; ")
+				.find((row) => row.startsWith("token"))
+				.split("=")[1];
 			const header = {
-				headers: { Authorization: `Bearer ${document.cookie}` },
+				headers: { Authorization: `Bearer ${cookieValue}` },
 			};
 			const res = await axios.post("/api/rooms", data, header);
-			console.log(res)
-			setUpdate(update + 1)
+			console.log(res);
+			setUpdate(update + 1);
 		} catch (e) {
 			const errorResponse = e.response.data.message;
 
 			if (errorResponse) {
 				setAlert({
-					status: "failure",
+					status: true,
 					message: errorResponse,
 					color: "danger",
 				});
 			} else {
 				setAlert({
-					status: "failure",
+					status: true,
 					message: e.message,
 					color: "danger",
 				});
 			}
 		}
+		setSpinner(false);
 	});
 	return (
 		<form onSubmit={onSubmit}>
-			<div className="mb-3">
+			<div className="mb-3 form-label-group">
 				<Input
-					label="Check In Date:"
+					label="Check In Date"
 					type="date"
 					id="startDate"
 					name="startDate"
 					errors={errors.startDate}
-					className="form-control"
 					ref={register({
 						required: "This field is required",
 						validate: (value) =>
@@ -106,13 +121,12 @@ const Booking = ({update, setUpdate}) => {
 					})}
 				/>
 			</div>
-			<div className="mb-3">
+			<div className="mb-3 form-label-group">
 				<Input
-					label="Check Out Date:"
+					label="Check Out Date"
 					type="date"
 					id="endDate"
 					name="endDate"
-					className="form-control"
 					errors={errors.endDate}
 					ref={register({
 						required: "This field is required",
@@ -123,28 +137,36 @@ const Booking = ({update, setUpdate}) => {
 				/>
 			</div>
 			<div className="mb-3">
-				<button type="submit" className="btn btn-primary">
-					Submit
+				<ButtonSpin spinner={spinner} name="Submit" />
+				<button
+					type="button"
+					className="btn btn-secondary btn-block custom-btn"
+					onClick={() => clearErrors()}
+				>
+					Cancel
 				</button>
 			</div>
-			{alert.status && (
-				<Alerts
-					setAlert={setAlert}
-					message={alert.message}
-					color={alert.color}
-				/>
-			)}
+			<Alerts
+				status={alert.status}
+				setAlert={setAlert}
+				message={alert.message}
+				color={alert.color}
+			/>
 		</form>
 	);
 };
 
-const Table = ({update}) => {
+const Table = ({ update }) => {
 	const [data, setData] = useState([]);
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
+				const cookieValue = document.cookie
+					.split("; ")
+					.find((row) => row.startsWith("token"))
+					.split("=")[1];
 				const header = {
-					headers: { Authorization: `Bearer ${document.cookie}` },
+					headers: { Authorization: `Bearer ${cookieValue}` },
 				};
 				const res = await axios.get("/api/rooms/booking", header);
 				setData([...res.data]);
@@ -156,7 +178,7 @@ const Table = ({update}) => {
 		fetchData();
 	}, [update]);
 	return (
-		<table className="table table-striped table-bordered">
+		<table className="table m-0">
 			<thead>
 				<tr>
 					<th scope="col">Check In Date</th>
@@ -167,16 +189,47 @@ const Table = ({update}) => {
 				</tr>
 			</thead>
 			<tbody>
-				{data.map((data) => (
-					<tr key={data._id}>
+				{data.map((data, index) => (
+					<tr key={index}>
 						<td>{data.startDate}</td>
 						<td>{data.endDate}</td>
 						<td>{data.room}</td>
 						<td>{data.duration}</td>
-						<td>@mdo</td>
+						<td>
+							<ButtonList />
+						</td>
 					</tr>
 				))}
 			</tbody>
 		</table>
+	);
+};
+
+const ButtonList = () => {
+	return (
+		<ul className="list-inline m-0">
+			<li className="list-inline-item">
+				<button
+					className="btn btn-success btn-sm rounded-0"
+					type="button"
+					data-toggle="tooltip"
+					data-placement="top"
+					title="Edit"
+				>
+					<span>2</span>
+				</button>
+			</li>
+			<li className="list-inline-item">
+				<button
+					className="btn btn-danger btn-sm rounded-0"
+					type="button"
+					data-toggle="tooltip"
+					data-placement="top"
+					title="Delete"
+				>
+					<span>2</span>
+				</button>
+			</li>
+		</ul>
 	);
 };

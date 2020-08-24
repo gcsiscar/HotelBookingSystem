@@ -1,7 +1,7 @@
 import React from "react";
 
 export default function ButtonSpin(props) {
-	const { spinner } = props;
+	const { spinner, name } = props;
 	return (
 		<button
 			type="submit"
@@ -14,7 +14,7 @@ export default function ButtonSpin(props) {
 					role="status"
 				></span>
 			)}
-			{spinner ? "Loading..." : "Sign In"}
+			{spinner ? "Loading..." : name}
 		</button>
 	);
 }

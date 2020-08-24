@@ -1,23 +1,8 @@
+const moment = require("moment");
 const Room = require("../models/Room");
 
 module.exports = {
-    find: async (req, res) => {
-        try {
-            const rooms = await Room.find()
-                .populate("bookings.user_id", "email name")
-                .exec();
-            if (!rooms) {
-                return res.status(200).json({ message: "No bookings found" });
-            } else {
-                return res.status(200).json(rooms);
-            }
-        } catch (err) {
-            res.status(400).json(err);
-            console.log(err);
-        }
-    },
-
-    add: async (req, res) => {
+    addBooking: async (req, res) => {
         const { startDate, endDate } = req.body;
 
         const query = {
@@ -38,10 +23,10 @@ module.exports = {
             if (findEmptyRoom) {
                 const { name } = findEmptyRoom;
 
-                const newStartDate = new Date(`${startDate} 08:00`);
-                const newEndDate = new Date(`${endDate} 08:00`);
+                const newStartDate = moment.utc(startDate, "YYYY-MM-DD", true);
+                const newEndDate = moment.utc(endDate, "YYYY-MM-DD", true);
 
-                const duration = newEndDate.getDate() - newStartDate.getDate();
+                const duration = newEndDate.diff(newStartDate, "days");
 
                 const update = {
                     $addToSet: {
@@ -73,15 +58,36 @@ module.exports = {
         }
     },
 
-    findById: async (req, res) => {
+    getAll: async (req, res) => {
+        try {
+            const rooms = await Room.find()
+                .lean()
+                .populate("bookings.user_id", "email name")
+                .exec();
+            return res.status(200).json(rooms);
+        } catch (err) {
+            res.status(400).json(err);
+            console.log(err);
+        }
+    },
+
+    getOne: async (req, res) => {
         const id = req.user._id;
 
         try {
             const room = await Room.find({ "bookings.user_id": id })
+                .lean()
                 .distinct("bookings")
                 .exec();
 
-            return res.status(200).json(room);
+            const formatedRoom = room.map((res) => {
+                return Object.assign(res, {
+                    startDate: moment.parseZone(res.startDate).format("LL"),
+                    endDate: moment.parseZone(res.endDate).format("LL"),
+                });
+            });
+
+            return res.status(200).json(formatedRoom);
         } catch (err) {
             res.status(400).json(err);
             console.log(err);
@@ -97,10 +103,10 @@ module.exports = {
         try {
             const room = Room.findOne(query).exec();
             if (room) {
-                const newStartDate = new Date(`${startDate} 08:00`);
-                const newEndDate = new Date(`${endDate} 08:00`);
+                const newStartDate = moment.utc(startDate, "YYYY-MM-DD", true);
+                const newEndDate = moment.utc(endDate, "YYYY-MM-DD", true);
 
-                const duration = newEndDate.getDate() - newStartDate.getDate(); 
+                const duration = newEndDate.diff(newStartDate, "days");
                 const update = {
                     $set: {
                         bookings: {

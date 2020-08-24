@@ -1,18 +1,18 @@
 import React from "react";
 import { Route, Redirect } from "react-router-dom";
-import auth from "./utils/auth";
 
-export default function ProtectedRoute ({ component: Component, ...rest }) {
+export default function ProtectedRoute(props) {
+  const { component: Component, auth, ...rest } = props;
   return (
     <Route
       {...rest}
       render={() => {
         if (auth.isAuthenticated()) {
-          return <Component />;
+          return <Component auth={auth}/>;
         } else {
           return <Redirect to="/sign-in" />;
         }
       }}
     />
   );
-};
+}

@@ -11,13 +11,12 @@ router.post("/users/signUp", User.signUp);
 router.post("/users/signIn", User.signIn);
 
 //Room methods
-router.get("/rooms", Room.find);
-router.get("/rooms/booking", authenticateUser, Room.findById);
-router.post("/rooms", authenticateUser, Room.add);
+router.get("/rooms", Room.getAll);
+router.get("/rooms/booking", authenticateUser, Room.getOne);
+router.post("/rooms", authenticateUser, Room.addBooking);
 router.put("/rooms/booking", Room.editById);
 
 function authenticateUser(req, res, next) {
-	console.log(req.headers)
 	const authHeader = req.headers["authorization"];
 	const token = authHeader && authHeader.split(" ")[1];
 

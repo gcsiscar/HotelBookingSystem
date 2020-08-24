@@ -1,9 +1,9 @@
 import React from "react";
-import image from "./img/booking.svg";
+import image from "../img/booking.svg";
 
 export default function Home() {
 	return (
-		<header class="custom-center">
+		<header className="custom-center bg-white">
 			<div className="container h-100">
 				<div className="row row-cols-2 h-100 align-items-center">
 					<div className="col">
@@ -21,7 +21,7 @@ export default function Home() {
 						</button>
 					</div>
 					<div className="col">
-						<img src={image} class="img-fluid" alt="..." />
+						<img src={image} className="img-fluid" alt="..." />
 					</div>
 				</div>
 			</div>

@@ -19,12 +19,13 @@ export default function Navbar() {
 				</NavLink>
 			</div>
 			<div>
-				<NavLink to="/sign-in" className="btn btn-sm btn-outline-light mr-2">
+				<NavLink
+					to="/sign-in"
+					className="btn btn-sm btn-outline-light mr-2"
+				>
 					Sign In
 				</NavLink>
-				<NavLink
-					to="/sign-up" className="btn btn-sm btn-outline-light"
-				>
+				<NavLink to="/sign-up" className="btn btn-sm btn-outline-light">
 					Sign Up
 				</NavLink>
 			</div>

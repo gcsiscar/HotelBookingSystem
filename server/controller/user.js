@@ -4,12 +4,8 @@ const User = require("../models/User");
 module.exports = {
     getAll: async (req, res) => {
         try {
-            const users = await User.find().select("name email").exec();
-            if (!users) {
-                return res.status(200).json({ message: "No user found" });
-            } else {
-                return res.status(200).json(users);
-            }
+            const users = await User.find().lean().select("name email").exec();
+            return res.status(200).json(users);
         } catch (err) {
             res.status(400).json(err);
             console.log(err);
@@ -20,7 +16,7 @@ module.exports = {
         const { email, password } = req.body;
 
         try {
-            const user = await User.findOne({ email, password }).exec();
+            const user = await User.findOne({ email, password }).lean().exec();
             if (!user) {
                 return res
                     .status(400)
@@ -41,7 +37,7 @@ module.exports = {
         const { email } = req.body;
 
         try {
-            const usedEmail = await User.findOne({ email }).exec();
+            const usedEmail = await User.findOne({ email }).lean().exec();
             if (!usedEmail) {
                 try {
                     await User.create(req.body);

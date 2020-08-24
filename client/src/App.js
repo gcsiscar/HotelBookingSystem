@@ -1,24 +1,29 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { Switch, Route } from "react-router-dom";
 
-import SignUp from "./components/SignUp";
-import SignIn from "./components/SignIn";
 import Navbar from "./components/Navbar";
-import Home from "./components/Home";
-import Dashboard from "./components/Dashboard";
-import ProtectedRoute from "./components/ProtectedRoute";
+import auth from "./components/utils/auth";
+
+const SignUp = lazy(() => import("./components/page/SignUp"));
+const SignIn = lazy(() => import("./components/page/SignIn"));
+const Home = lazy(() => import("./components/page/Home"));
+const Dashboard = lazy(() => import("./components/page/Dashboard"));
+const ProtectedRoute = lazy(() => import("./components/ProtectedRoute"));
+const PageNotFound = lazy(() => import("./components/404"));
 
 export default function App() {
   return (
     <div className="App">
-      <Navbar />
-      <Switch>
-        <Route exact path="/" component={Home} />
-        <Route path="/sign-in" component={SignIn} />
-        <Route path="/sign-up" component={SignUp} />
-        <ProtectedRoute exact path="/dashboard" component={Dashboard} />
-        <Route path="*" render={() => <h1>404 not found</h1>} />
-      </Switch>
+      <Navbar auth={auth} />
+      <Suspense fallback={<h1>Loading Page....</h1>}>
+        <Switch>
+          <Route exact path="/" render={() => <Home />} />
+          <Route path="/sign-in" render={() => <SignIn auth={auth} />} />
+          <Route path="/sign-up" render={() => <SignUp />} />
+          <ProtectedRoute path="/dashboard" auth={auth} component={Dashboard} />
+          <Route path="*" render={() => <PageNotFound />} />
+        </Switch>
+      </Suspense>
     </div>
   );
 }
