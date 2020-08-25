@@ -6,7 +6,11 @@ const bookingSchema = new Schema({
 		type: Schema.Types.ObjectId,
 		ref: "User",
 	},
-	room: {
+	room_name: {
+		type: String,
+		ref: "Room",
+	},
+	room_type: {
 		type: String,
 		ref: "Room",
 	},
@@ -26,7 +30,26 @@ const bookingSchema = new Schema({
 });
 
 const roomSchema = new Schema({
-	name: String,
+	name: {
+		type: String,
+		trim: true,
+		required: [true, "Room name required"],
+	},
+	room_type: {
+		type: String,
+		trim: true,
+		enum: ["single", "family", "deluxe"],
+		required: [true, "Room type required"],
+	},
+	rate: {
+		type: Number,
+		enum: [800, 1400, 2000],
+		required: [true, "Must specify a rate"],
+	},
+	createdAt: {
+		type: Date,
+		default: Date.now,
+	},
 	bookings: [bookingSchema],
 });
 

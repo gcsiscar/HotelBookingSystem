@@ -3,9 +3,10 @@ const Room = require("../models/Room");
 
 module.exports = {
     addBooking: async (req, res) => {
-        const { startDate, endDate } = req.body;
+        const { startDate, endDate, roomType } = req.body;
 
         const query = {
+            room_type: roomType,
             bookings: {
                 $not: {
                     $elemMatch: {
@@ -21,7 +22,7 @@ module.exports = {
         try {
             const findEmptyRoom = await Room.findOne(query).exec();
             if (findEmptyRoom) {
-                const { name } = findEmptyRoom;
+                const { name, room_type } = findEmptyRoom;
 
                 const newStartDate = moment.utc(startDate, "YYYY-MM-DD", true);
                 const newEndDate = moment.utc(endDate, "YYYY-MM-DD", true);
@@ -32,7 +33,8 @@ module.exports = {
                     $addToSet: {
                         bookings: {
                             user_id: req.user._id,
-                            room: name,
+                            room_name: name,
+                            room_type,
                             startDate: newStartDate,
                             endDate: newEndDate,
                             duration,
@@ -57,8 +59,41 @@ module.exports = {
             console.log(err);
         }
     },
+    addRoom: async (req, res) => {
+        const { name } = req.body;
+        try {
+            const room = await Room.findOne({ name }).lean().exec();
+            if (room) {
+                return res
+                    .status(400)
+                    .json({ message: "Room name must be unique" });
+            } else {
+                await Room.create(req.body).exec();
+                return res
+                    .status(201)
+                    .json({ message: "Room created successfully" });
+            }
+        } catch (err) {
+            res.status(400).json(err);
+            console.log(err);
+        }
+    },
 
-    getAll: async (req, res) => {
+    deleteBooking: async (req, res) => {
+        const { _id } = req.body;
+
+        try {
+            const room = await Room.findOne({
+                "bookings._id": _id,
+            }).exec();
+            console.log(room);
+            return res.status(201).json(room);
+        } catch (e) {
+            res.status(400).json(e);
+            console.log(e);
+        }
+    },
+    getAllRooms: async (req, res) => {
         try {
             const rooms = await Room.find()
                 .lean()

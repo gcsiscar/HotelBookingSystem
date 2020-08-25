@@ -11,10 +11,12 @@ router.post("/users/signUp", User.signUp);
 router.post("/users/signIn", User.signIn);
 
 //Room methods
-router.get("/rooms", Room.getAll);
+router.get("/rooms", Room.getAllRooms);
 router.get("/rooms/booking", authenticateUser, Room.getOne);
-router.post("/rooms", authenticateUser, Room.addBooking);
+router.post("/rooms", Room.addRoom)
+router.post("/rooms/booking", authenticateUser, Room.addBooking);
 router.put("/rooms/booking", Room.editById);
+router.delete("/rooms/booking", Room.deleteBooking)
 
 function authenticateUser(req, res, next) {
 	const authHeader = req.headers["authorization"];

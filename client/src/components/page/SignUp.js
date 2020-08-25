@@ -14,7 +14,7 @@ export default function SignUp() {
 				<div className="row h-100 align-items-center justify-content-center">
 					<div className="card card-signup col-4 mb-3">
 						<div className="card-body">
-							<SignUpForm />
+							<Form />
 						</div>
 					</div>
 				</div>
@@ -23,9 +23,9 @@ export default function SignUp() {
 	);
 }
 
-const SignUpForm = () => {
+const Form = () => {
 	const [alert, setAlert] = useState({
-		status: null,
+		status: false,
 		message: "",
 		color: "",
 	});
@@ -53,13 +53,13 @@ const SignUpForm = () => {
 				});
 
 				setAlert({
-					status: "failure",
+					status: true,
 					message: errorResponse,
 					color: "danger",
 				});
 			} else {
 				setAlert({
-					status: "failure",
+					status: true,
 					message: e.message,
 					color: "danger",
 				});

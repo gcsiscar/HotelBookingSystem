@@ -9,37 +9,19 @@ import ButtonSpin from "../utils/ButtonSpin";
 import Modal from "./Modal";
 
 export default function Dashboard({ auth }) {
-	const [update, setUpdate] = useState(0);
-	const [show, setShow] = useState(false);
 	const history = useHistory();
 	return (
 		<div className="container">
 			<div className="row row-cols-2">
-				<div className="col-4">
+				<div className="col-12">
 					<div className="card mt-3">
 						<div className="card-header bg-primary text-white">
-							Create A Booking
+							Bookings
 						</div>
 						<div className="card-body">
-							<Booking setUpdate={setUpdate} update={update} />
+							<Table />
 						</div>
 					</div>
-				</div>
-				<div className="col-8">
-					<div className="card mt-3">
-						<div className="card-header bg-primary text-white">
-							Placeholder Header
-						</div>
-						<div className="card-body">
-							<Table update={update} />
-						</div>
-					</div>
-				</div>
-				<div>
-					<Modal show={show} close={setShow}>
-					<Booking/>
-					</Modal>
-					<button onClick={() => setShow(true)}>Click Me</button>
 				</div>
 				<div>
 					<button
@@ -60,7 +42,7 @@ export default function Dashboard({ auth }) {
 }
 
 const Booking = ({ update, setUpdate }) => {
-	const { register, handleSubmit, errors, watch, clearErrors } = useForm();
+	const { register, handleSubmit, errors, watch } = useForm();
 
 	const watchStartDate = watch("startDate", Date.now());
 
@@ -82,7 +64,7 @@ const Booking = ({ update, setUpdate }) => {
 			const header = {
 				headers: { Authorization: `Bearer ${cookieValue}` },
 			};
-			const res = await axios.post("/api/rooms", data, header);
+			const res = await axios.post("/api/rooms/booking", data, header);
 			console.log(res);
 			setUpdate(update + 1);
 		} catch (e) {
@@ -136,15 +118,23 @@ const Booking = ({ update, setUpdate }) => {
 					})}
 				/>
 			</div>
+			<div className="mb-3 form-label-group">
+				<select
+					className="form-select"
+					id="roomType"
+					name="roomType"
+					ref={register}
+				>
+					<option value="single">Single Room</option>
+					<option value="family">Family Room</option>
+					<option value="deluxe">Deluxe Room</option>
+				</select>
+				<label htmlFor="roomType" className="form-label">
+					Select
+				</label>
+			</div>
 			<div className="mb-3">
 				<ButtonSpin spinner={spinner} name="Submit" />
-				<button
-					type="button"
-					className="btn btn-secondary btn-block custom-btn"
-					onClick={() => clearErrors()}
-				>
-					Cancel
-				</button>
 			</div>
 			<Alerts
 				status={alert.status}
@@ -156,8 +146,10 @@ const Booking = ({ update, setUpdate }) => {
 	);
 };
 
-const Table = ({ update }) => {
+const Table = () => {
+	const [update, setUpdate] = useState(0);
 	const [data, setData] = useState([]);
+	const [show, setShow] = useState(false);
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
@@ -169,6 +161,7 @@ const Table = ({ update }) => {
 					headers: { Authorization: `Bearer ${cookieValue}` },
 				};
 				const res = await axios.get("/api/rooms/booking", header);
+				console.log(res.data);
 				setData([...res.data]);
 			} catch (e) {
 				console.log(e);
@@ -178,56 +171,83 @@ const Table = ({ update }) => {
 		fetchData();
 	}, [update]);
 	return (
-		<table className="table m-0">
-			<thead>
-				<tr>
-					<th scope="col">Check In Date</th>
-					<th scope="col">Check Out Date</th>
-					<th scope="col">Duration</th>
-					<th scope="col">Total</th>
-					<th scope="col">Actions</th>
-				</tr>
-			</thead>
-			<tbody>
-				{data.map((data, index) => (
-					<tr key={index}>
-						<td>{data.startDate}</td>
-						<td>{data.endDate}</td>
-						<td>{data.room}</td>
-						<td>{data.duration}</td>
-						<td>
-							<ButtonList />
-						</td>
+		<React.Fragment>
+			<div>
+				<Modal show={show} close={setShow}>
+					<Booking update={update} setUpdate={setUpdate} />
+				</Modal>
+				<button onClick={() => setShow(true)}>Click Me</button>
+			</div>
+			<table className="table table-borderless table-responsive table-hover m-0">
+				<thead>
+					<tr>
+						<th className="text-center">#</th>
+						<th>Room</th>
+						<th>Type</th>
+						<th>Check In</th>
+						<th>Check Out</th>
+						<th>Days</th>
+						<th>Action</th>
 					</tr>
-				))}
-			</tbody>
-		</table>
+				</thead>
+				<tbody>
+					{data.map((data, index) => (
+						<tr key={index}>
+							<td className="text-center">{index + 1}</td>
+							<td>{data.room_name}</td>
+							<td>{data.room_type}</td>
+							<td>{data.startDate}</td>
+							<td>{data.endDate}</td>
+							<td>{data.duration}</td>
+							<td>
+								<Action
+									_id={data._id}
+									update={update}
+									setUpdate={setUpdate}
+								/>
+							</td>
+						</tr>
+					))}
+				</tbody>
+			</table>
+		</React.Fragment>
 	);
 };
 
-const ButtonList = () => {
+const Action = ({ _id, update, setUpdate }) => {
+	const deleteEntry = async () => {
+		try {
+			await axios({
+				method: "delete",
+				url: "/api/rooms/booking",
+				data: {
+					_id: _id,
+				},
+			});
+			setUpdate(update + 1);
+		} catch (e) {
+			console.log(e);
+		}
+	};
 	return (
 		<ul className="list-inline m-0">
 			<li className="list-inline-item">
 				<button
 					className="btn btn-success btn-sm rounded-0"
 					type="button"
-					data-toggle="tooltip"
-					data-placement="top"
 					title="Edit"
 				>
-					<span>2</span>
+					Edit
 				</button>
 			</li>
 			<li className="list-inline-item">
 				<button
 					className="btn btn-danger btn-sm rounded-0"
 					type="button"
-					data-toggle="tooltip"
-					data-placement="top"
 					title="Delete"
+					onClick={() => deleteEntry()}
 				>
-					<span>2</span>
+					Remove
 				</button>
 			</li>
 		</ul>

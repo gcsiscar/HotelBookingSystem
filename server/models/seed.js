@@ -4,18 +4,28 @@ const User = require("./User");
 Room.create([
     {
         name: "Room 1",
+        room_type: "single",
+        rate: 800,
     },
     {
         name: "Room 2",
+        room_type: "single",
+        rate: 800,
     },
     {
         name: "Room 3",
+        room_type: "family",
+        rate: 1400,
     },
     {
         name: "Room 4",
+        room_type: "family",
+        rate: 1400,
     },
     {
         name: "Room 5",
+        room_type: "deluxe",
+        rate: 2000,
     },
 ]).then((rooms) => console.log(`Created ${rooms.length} rooms`));
 
