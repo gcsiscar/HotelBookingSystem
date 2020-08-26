@@ -1,6 +1,19 @@
-const moment = require("moment");
 const Room = require("../models/Room");
+const { convertDate, parseDate } = require("../db/handleDate");
 
+const total = (room_type, duration) => {
+    switch (room_type) {
+        case "Single":
+            return 800 * duration;
+        case "Family":
+            return 1400 * duration;
+        case "Deluxe":
+            return 2000 * duration;
+        default:
+            console.log("Error");
+            break;
+    }
+};
 module.exports = {
     addBooking: async (req, res) => {
         const { startDate, endDate, roomType } = req.body;
@@ -24,10 +37,10 @@ module.exports = {
             if (findEmptyRoom) {
                 const { name, room_type } = findEmptyRoom;
 
-                const newStartDate = moment.utc(startDate, "YYYY-MM-DD", true);
-                const newEndDate = moment.utc(endDate, "YYYY-MM-DD", true);
-
-                const duration = newEndDate.diff(newStartDate, "days");
+                const { newStartDate, newEndDate, duration } = convertDate(
+                    startDate,
+                    endDate
+                );
 
                 const update = {
                     $addToSet: {
@@ -38,6 +51,7 @@ module.exports = {
                             startDate: newStartDate,
                             endDate: newEndDate,
                             duration,
+                            total: total(room_type, duration),
                         },
                     },
                 };
@@ -81,16 +95,15 @@ module.exports = {
 
     deleteBooking: async (req, res) => {
         const { _id } = req.body;
+        const query = { "bookings._id": _id };
+        const deleteEntry = { $pull: { bookings: { _id: _id } } };
 
         try {
-            const room = await Room.findOne({
-                "bookings._id": _id,
-            }).exec();
-            console.log(room);
-            return res.status(201).json(room);
-        } catch (e) {
-            res.status(400).json(e);
-            console.log(e);
+            await Room.updateOne(query, deleteEntry);
+            return res.status(201).json({ message: "Deleted!" });
+        } catch (err) {
+            res.status(400).json(err);
+            console.log(err);
         }
     },
     getAllRooms: async (req, res) => {
@@ -107,18 +120,19 @@ module.exports = {
     },
 
     getOne: async (req, res) => {
-        const id = req.user._id;
+        const _id = req.user._id;
+        const query = { "bookings.user_id": _id };
 
         try {
-            const room = await Room.find({ "bookings.user_id": id })
+            const room = await Room.find(query)
                 .lean()
                 .distinct("bookings")
                 .exec();
 
             const formatedRoom = room.map((res) => {
                 return Object.assign(res, {
-                    startDate: moment.parseZone(res.startDate).format("LL"),
-                    endDate: moment.parseZone(res.endDate).format("LL"),
+                    startDate: parseDate(res.startDate),
+                    endDate: parseDate(res.endDate),
                 });
             });
 
@@ -129,41 +143,46 @@ module.exports = {
         }
     },
 
-    editById: async (req, res) => {
-        const { startDate, endDate, id } = req.body;
-        const query = {
-            "bookings.user_id": id,
-        };
+    editBooking: async (req, res) => {
+        const { startDate, endDate, roomType, _id } = req.body;
+        const query = { "bookings._id": _id };
+        const deleteEntry = { $pull: { bookings: { _id: _id } } };
 
         try {
-            const room = Room.findOne(query).exec();
-            if (room) {
-                const newStartDate = moment.utc(startDate, "YYYY-MM-DD", true);
-                const newEndDate = moment.utc(endDate, "YYYY-MM-DD", true);
+            const findRoom = await Room.findOne(query).exec();
+            const { name } = findRoom;
 
-                const duration = newEndDate.diff(newStartDate, "days");
-                const update = {
-                    $set: {
-                        bookings: {
-                            startDate: newStartDate,
-                            endDate: newEndDate,
-                            duration,
-                        },
+            await findRoom.updateOne(deleteEntry).exec();
+
+            const { newStartDate, newEndDate, duration } = convertDate(
+                startDate,
+                endDate
+            );
+
+            const update = {
+                $addToSet: {
+                    bookings: {
+                        user_id: req.user._id,
+                        room_name: name,
+                        room_type: roomType,
+                        startDate: newStartDate,
+                        endDate: newEndDate,
+                        duration,
+                        total: total(roomType, duration),
                     },
-                };
-                try {
-                    await room.updateOne(update).exec();
-                    return res.status(200).json({ message: "Success" });
-                } catch (e) {
-                    res.status(400).json(e);
-                    console.log(e);
-                }
-            } else {
-                return res.status(400).json({ message: "Error" });
+                },
+            };
+
+            try {
+                await findRoom.updateOne(update).exec();
+                return res.status(200).json({ message: "Edit Successfull" });
+            } catch (err) {
+                res.status(400).json(err);
+                console.log(err);
             }
-        } catch (e) {
-            res.status(400).json(e);
-            console.log(e);
+        } catch (err) {
+            res.status(400).json(err);
+            console.log(err);
         }
     },
 };

@@ -23,6 +23,7 @@ const bookingSchema = new Schema({
 		required: [true, "Please specify a date"],
 	},
 	duration: Number,
+	total: Number,
 	createdAt: {
 		type: Date,
 		default: Date.now,
@@ -38,7 +39,7 @@ const roomSchema = new Schema({
 	room_type: {
 		type: String,
 		trim: true,
-		enum: ["single", "family", "deluxe"],
+		enum: ["Single", "Family", "Deluxe"],
 		required: [true, "Room type required"],
 	},
 	rate: {

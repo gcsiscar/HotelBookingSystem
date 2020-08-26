@@ -15,7 +15,7 @@ router.get("/rooms", Room.getAllRooms);
 router.get("/rooms/booking", authenticateUser, Room.getOne);
 router.post("/rooms", Room.addRoom)
 router.post("/rooms/booking", authenticateUser, Room.addBooking);
-router.put("/rooms/booking", Room.editById);
+router.put("/rooms/booking", authenticateUser, Room.editBooking);
 router.delete("/rooms/booking", Room.deleteBooking)
 
 function authenticateUser(req, res, next) {
