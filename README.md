@@ -100,7 +100,7 @@ This will help to ensure that room resources are used as fully-utilised as possi
 
 
 ## Entity Relationship Diagram
-[Entity Relationship Diagram](docs/RoomBookingSystem-ERD-v1.png)
+[Entity Relationship Diagram](docs/HotelBookingSystem-ERD.png)
 
 ## Technologies
 - Node.js
