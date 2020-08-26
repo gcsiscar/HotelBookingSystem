@@ -103,7 +103,7 @@ This will help to ensure that room resources are used as fully-utilised as possi
 ## Entity Relationship Diagram
 [Entity Relationship Diagram](docs/HotelBookingSystem-ERD.png)
 
-## Entity Relationship Diagram
+## Flow Chart
 [Flow Chart](docs/FlowChart.png)
 
 ## Technologies
