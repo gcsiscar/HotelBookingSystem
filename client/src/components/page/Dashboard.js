@@ -183,9 +183,6 @@ const Table = () => {
 	}, [update]);
 	return (
 		<React.Fragment>
-			<div>
-				<button onClick={() => setShow(true)}>Click Me</button>
-			</div>
 			<table className="table table-borderless table-responsive table-hover m-0">
 				<thead>
 					<tr className="text-center">
@@ -220,6 +217,14 @@ const Table = () => {
 					))}
 				</tbody>
 			</table>
+			<div>
+				<button
+					className="btn btn-sm w-25 btn-primary custom-btn"
+					onClick={() => setShow(true)}
+				>
+					Add Booking
+				</button>
+			</div>
 			<Modal show={show} close={setShow}>
 				<Booking update={update} setUpdate={setUpdate} method="post" />
 			</Modal>

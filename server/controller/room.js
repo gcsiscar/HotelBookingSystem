@@ -73,25 +73,6 @@ module.exports = {
             console.log(err);
         }
     },
-    addRoom: async (req, res) => {
-        const { name } = req.body;
-        try {
-            const room = await Room.findOne({ name }).lean().exec();
-            if (room) {
-                return res
-                    .status(400)
-                    .json({ message: "Room name must be unique" });
-            } else {
-                await Room.create(req.body).exec();
-                return res
-                    .status(201)
-                    .json({ message: "Room created successfully" });
-            }
-        } catch (err) {
-            res.status(400).json(err);
-            console.log(err);
-        }
-    },
 
     deleteBooking: async (req, res) => {
         const { _id } = req.body;
@@ -106,19 +87,6 @@ module.exports = {
             console.log(err);
         }
     },
-    getAllRooms: async (req, res) => {
-        try {
-            const rooms = await Room.find()
-                .lean()
-                .populate("bookings.user_id", "email name")
-                .exec();
-            return res.status(200).json(rooms);
-        } catch (err) {
-            res.status(400).json(err);
-            console.log(err);
-        }
-    },
-
     getOne: async (req, res) => {
         const _id = req.user._id;
         const query = { "bookings.user_id": _id };
@@ -143,42 +111,70 @@ module.exports = {
         }
     },
 
-    editBooking: async (req, res) => {
+    edit: async (req, res) => {
         const { startDate, endDate, roomType, _id } = req.body;
         const query = { "bookings._id": _id };
         const deleteEntry = { $pull: { bookings: { _id: _id } } };
-
-        try {
-            const findRoom = await Room.findOne(query).exec();
-            const { name } = findRoom;
-
-            await findRoom.updateOne(deleteEntry).exec();
-
-            const { newStartDate, newEndDate, duration } = convertDate(
-                startDate,
-                endDate
-            );
-
-            const update = {
-                $addToSet: {
-                    bookings: {
-                        user_id: req.user._id,
-                        room_name: name,
-                        room_type: roomType,
-                        startDate: newStartDate,
-                        endDate: newEndDate,
-                        duration,
-                        total: total(roomType, duration),
+        const queryEmpty = {
+            room_type: roomType,
+            bookings: {
+                $not: {
+                    $elemMatch: {
+                        $and: [
+                            { startDate: { $lte: endDate } },
+                            { endDate: { $gte: startDate } },
+                        ],
                     },
                 },
-            };
+            },
+        };
 
-            try {
-                await findRoom.updateOne(update).exec();
-                return res.status(200).json({ message: "Edit Successfull" });
-            } catch (err) {
-                res.status(400).json(err);
-                console.log(err);
+        try {
+            const emptyRoom = await Room.findOne(queryEmpty).exec();
+
+            if (emptyRoom) {
+                const { name, room_type } = emptyRoom;
+
+                try {
+                    await Room.updateOne(query, deleteEntry);
+
+                    try {
+                        const {
+                            newStartDate,
+                            newEndDate,
+                            duration,
+                        } = convertDate(startDate, endDate);
+
+                        const update = {
+                            $addToSet: {
+                                bookings: {
+                                    user_id: req.user._id,
+                                    room_name: name,
+                                    room_type,
+                                    startDate: newStartDate,
+                                    endDate: newEndDate,
+                                    duration,
+                                    total: total(roomType, duration),
+                                },
+                            },
+                        };
+
+                        await emptyRoom.updateOne(update).exec();
+                        return res
+                            .status(200)
+                            .json({ message: "Booking Successfull" });
+                    } catch (err) {
+                        res.status(400).json(err);
+                        console.log(err);
+                    }
+                } catch (err) {
+                    res.status(400).json(err);
+                    console.log(err);
+                }
+            } else {
+                return res
+                    .status(400)
+                    .json({ message: "No room available with that date" });
             }
         } catch (err) {
             res.status(400).json(err);

@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function Modal({ close, show, children }) {
+export default function Modal({ close, show, children}) {
 	const showModal = show ? "custom-modal display-block" : "display-none";
 
 	return (
@@ -9,7 +9,7 @@ export default function Modal({ close, show, children }) {
 				<div className="modal-dialog">
 					<div className="modal-content">
 						<div className="modal-header">
-							<h5 className="modal-title">Modal title</h5>
+							<h5 className="modal-title">Booking</h5>
 							<button
 								type="button"
 								className="close"

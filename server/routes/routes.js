@@ -1,40 +1,25 @@
 const express = require("express");
-const jwt = require("jsonwebtoken");
+const authenticateUser = require("../db/auth");
 
 const User = require("../controller/user");
 const Room = require("../controller/room");
-
+const Admin = require("../controller/admin");
 const router = express.Router();
 //user methods
-router.get("/users", authenticateUser, User.getAll);
+router.get("/users/info", authenticateUser, User.getOne);
 router.post("/users/signUp", User.signUp);
 router.post("/users/signIn", User.signIn);
 
 //Room methods
-router.get("/rooms", Room.getAllRooms);
 router.get("/rooms/booking", authenticateUser, Room.getOne);
-router.post("/rooms", Room.addRoom)
 router.post("/rooms/booking", authenticateUser, Room.addBooking);
-router.put("/rooms/booking", authenticateUser, Room.editBooking);
-router.delete("/rooms/booking", Room.deleteBooking)
+router.put("/rooms/booking", authenticateUser, Room.edit);
+router.delete("/rooms/booking", Room.deleteBooking);
 
-function authenticateUser(req, res, next) {
-	const authHeader = req.headers["authorization"];
-	const token = authHeader && authHeader.split(" ")[1];
-
-	if (!token) {
-		return res
-			.status(401)
-			.json({ message: "No token, check for authorization header" });
-	}
-
-	jwt.verify(token, "secret", (err, user) => {
-		if (err) {
-			return res.status(403).json(err);
-		}
-		req.user = user;
-		next();
-	});
-}
+//Admin methods
+router.get("/rooms/admin", Admin.getAllRooms);
+router.get("/user/admin", Admin.getAllUser);
+router.post("/rooms/admin", Admin.addRoom);
+router.delete("/users/admin", Admin.deleteUser);
 
 module.exports = router;

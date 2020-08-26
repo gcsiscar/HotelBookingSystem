@@ -2,10 +2,14 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
 module.exports = {
-    getAll: async (req, res) => {
+    getOne: async (req, res) => {
+        const _id = req.user._id;
         try {
-            const users = await User.find().lean().select("name email").exec();
-            return res.status(200).json(users);
+            const user = await User.findById(_id)
+                .lean()
+                .select("name email createdAt")
+                .exec();
+            return res.status(200).json(user);
         } catch (err) {
             res.status(400).json(err);
             console.log(err);
