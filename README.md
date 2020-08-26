@@ -8,6 +8,7 @@ A room booking system built with MongoDB, Express, Node.js and ReactJS.
   * [Installation](#installation)
 * [About project](#about-project)
 * [Entity Relationship Diagram](#entity-relationship-diagram)
+* [Flow Chart](#flow-chart)
 * [Technologies](#technologies)
 * [Challenges and final thoughts](#challenges-and-final-thoughts)
 
@@ -101,6 +102,9 @@ This will help to ensure that room resources are used as fully-utilised as possi
 
 ## Entity Relationship Diagram
 [Entity Relationship Diagram](docs/HotelBookingSystem-ERD.png)
+
+## Entity Relationship Diagram
+[Flow Chart](docs/FlowChart.png)
 
 ## Technologies
 - Node.js
