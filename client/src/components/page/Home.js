@@ -1,5 +1,6 @@
 import React from "react";
 import image from "../img/booking.svg";
+import { NavLink } from "react-router-dom";
 
 export default function Home() {
 	return (
@@ -9,16 +10,14 @@ export default function Home() {
 					<div className="col">
 						<h1>Welcome To</h1>
 						<h1>Hotel Booking System</h1>
-						<p>
-							Lorem ipsum dolor sit amet, consectetur adipisicing
-							elit. Repellendus ab nulla dolorum autem nisi
-							officiis blanditiis voluptatem hic, assumenda
-							aspernatur facere ipsam nemo ratione cumque magnam
-							enim fugiat reprehenderit expedita.
+						<p className="lead">
+							A web-based application that allows the user to
+							login from anywhere to easily, accurately and
+							quickly make room bookings.
 						</p>
-						<button className="btn btn-primary btn-lg w-50 custom-btn">
+						<NavLink to="/dashboard" className="btn btn-primary btn-lg w-50 custom-btn">
 							Start Booking
-						</button>
+						</NavLink>
 					</div>
 					<div className="col">
 						<img src={image} className="img-fluid" alt="..." />

@@ -1,47 +1,154 @@
 import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { NavLink, Route, Switch, Redirect } from "react-router-dom";
 import axios from "axios";
+import { useForm } from "react-hook-form";
 import { useHistory } from "react-router-dom";
+import moment from "moment";
 
+import Modal from "./Modal";
 import Input from "../utils/Input";
 import Alerts from "../utils/Alerts";
 import ButtonSpin from "../utils/ButtonSpin";
-import Modal from "./Modal";
 
 export default function Dashboard({ auth }) {
-	const history = useHistory();
 	return (
-		<div className="container">
-			<div className="row row-cols-2">
-				<div className="col-12">
-					<div className="card mt-3">
-						<div className="card-header bg-primary text-white">
-							Bookings
-						</div>
-						<div className="card-body">
-							<Table />
+		<div className="custom-center">
+			<div className="container h-100">
+				<div className="row h-100 align-items-center justify-content-center">
+					<div className="card mb-3">
+						<div className="card-body w-100">
+							<nav className="nav nav-tabs">
+								<NavLink
+									className="nav-link"
+									exact
+									to="/dashboard"
+								>
+									Home
+								</NavLink>
+								<NavLink
+									className="nav-link"
+									exact
+									to="/dashboard/booking"
+								>
+									Booking
+								</NavLink>
+								<NavLink
+									className="nav-link"
+									exact
+									to="/dashboard/account"
+								>
+									Account
+								</NavLink>
+							</nav>
+							<Switch>
+								<Route exact path="/dashboard">
+									<Table />
+								</Route>
+								<Route exact path="/dashboard/booking">
+									<AddBooking />
+								</Route>
+								<Route exact path="/dashboard/account">
+									<UserInfo auth={auth} />
+								</Route>
+								<Route path="*">
+									<Redirect to="/" />
+								</Route>
+							</Switch>
 						</div>
 					</div>
-				</div>
-				<div>
-					<button
-						onClick={() => {
-							auth.signOut(() => {
-								document.cookie =
-									"token=; expires = Thu, 01 Jan 1970 00:00:00 GMT";
-								history.push("/");
-							});
-						}}
-					>
-						Logout
-					</button>
 				</div>
 			</div>
 		</div>
 	);
 }
 
-const Booking = ({ update, setUpdate, method, _id }) => {
+const Table = () => {
+	const [update, setUpdate] = useState(false);
+	const [_id, set_id] = useState();
+	const [data, setData] = useState([]);
+	const [showModal, setShowModal] = useState(false);
+	useEffect(() => {
+		const fetchData = async () => {
+			try {
+				const { data } = await axios.get("/api/rooms/booking");
+				setData([...data]);
+			} catch (e) {
+				console.log(e);
+			}
+		};
+
+		fetchData();
+	}, [update]);
+	const deleteEntry = async (_id) => {
+		try {
+			await axios({
+				method: "delete",
+				url: "/api/rooms/booking",
+				data: { _id },
+			});
+			setUpdate(!update);
+		} catch (e) {
+			console.log(e);
+		}
+	};
+	return (
+		<React.Fragment>
+			<Modal show={showModal} close={setShowModal} title="Edit Booking">
+				<EditBooking _id={_id} update={update} setUpdate={setUpdate} />
+			</Modal>
+			<table className="table table-borderless table-responsive table-hover m-0">
+				<thead>
+					<tr className="text-center">
+						<th>#</th>
+						<th>Room</th>
+						<th>Type</th>
+						<th>Check In</th>
+						<th>Check Out</th>
+						<th>Days</th>
+						<th>Invoice</th>
+						<th>Action</th>
+					</tr>
+				</thead>
+				<tbody>
+					{data.map((data, index) => (
+						<tr className="text-center" key={index}>
+							<td>{index + 1}</td>
+							<td>{data.room_name}</td>
+							<td>{data.room_type}</td>
+							<td>{data.startDate}</td>
+							<td>{data.endDate}</td>
+							<td>{data.duration}</td>
+							<td>Php {data.total}</td>
+							<td>
+								<button
+									className="btn btn-primary btn-sm"
+									type="button"
+									title="Edit"
+									onClick={() => {
+										set_id(data._id);
+										setShowModal(true);
+									}}
+								>
+									Edit
+								</button>
+								<button
+									className="btn btn-secondary btn-sm ml-3"
+									type="button"
+									title="Remove"
+									onClick={() => deleteEntry(data._id)}
+								>
+									Remove
+								</button>
+							</td>
+						</tr>
+					))}
+				</tbody>
+			</table>
+		</React.Fragment>
+	);
+};
+
+const EditBooking = ({ update, setUpdate, _id }) => {
 	const { register, handleSubmit, errors, watch } = useForm();
 
 	const watchStartDate = watch("startDate", Date.now());
@@ -55,29 +162,15 @@ const Booking = ({ update, setUpdate, method, _id }) => {
 	const [spinner, setSpinner] = useState(false);
 
 	const onSubmit = handleSubmit(async (data) => {
-		const { startDate, endDate, roomType } = data;
 		setSpinner(true);
 		try {
-			const cookieValue = document.cookie
-				.split("; ")
-				.find((row) => row.startsWith("token"))
-				.split("=")[1];
-			const header = {
-				headers: { Authorization: `Bearer ${cookieValue}` },
-			};
-			if (method === "post") {
-				await axios.post("/api/rooms/booking", data, header);
-			}
+			await axios({
+				method: "put",
+				url: "/api/rooms/booking",
+				data: { ...data, _id },
+			});
 
-			if (method === "put") {
-				await axios({
-					method: "put",
-					url: "/api/rooms/booking",
-					headers: header.headers,
-					data: { startDate, endDate, roomType, _id },
-				});
-			}
-			setUpdate(update + 1);
+			setUpdate(!update);
 		} catch (e) {
 			const errorResponse = e.response.data.message;
 
@@ -157,127 +250,166 @@ const Booking = ({ update, setUpdate, method, _id }) => {
 	);
 };
 
-const Table = () => {
-	const [update, setUpdate] = useState(0);
-	const [data, setData] = useState([]);
-	const [show, setShow] = useState(false);
+const AddBooking = ({ _id }) => {
+	const { register, handleSubmit, errors, watch } = useForm();
+
+	const watchStartDate = watch("startDate", Date.now());
+
+	const [alert, setAlert] = useState({
+		status: null,
+		message: "",
+		color: "",
+	});
+
+	const [spinner, setSpinner] = useState(false);
+
+	const onSubmit = handleSubmit(async (data) => {
+		setSpinner(true);
+		try {
+			await axios.post("/api/rooms/booking", data);
+			setAlert({
+				status: true,
+				message: "Booking Successfull",
+				color: "success",
+			});
+		} catch (e) {
+			const errorResponse = e.response.data.message;
+			if (errorResponse) {
+				setAlert({
+					status: true,
+					message: errorResponse,
+					color: "danger",
+				});
+			} else {
+				setAlert({
+					status: true,
+					message: e.message,
+					color: "danger",
+				});
+			}
+		}
+		setSpinner(false);
+	});
+	return (
+		<div className="row row-cols-2">
+			<div className="col-6">
+				<div className="card">
+					<div className="card-header bg-primary text-white">
+						Featured
+					</div>
+					<div className="card-body">
+						<form onSubmit={onSubmit}>
+							<div className="mb-3 form-label-group">
+								<Input
+									label="Check In Date"
+									type="date"
+									id="startDate"
+									name="startDate"
+									errors={errors.startDate}
+									ref={register({
+										required: "This field is required",
+										validate: (value) =>
+											new Date(value) >= Date.now() ||
+											"Cannot book from this date",
+									})}
+								/>
+							</div>
+							<div className="mb-3 form-label-group">
+								<Input
+									label="Check Out Date"
+									type="date"
+									id="endDate"
+									name="endDate"
+									errors={errors.endDate}
+									ref={register({
+										required: "This field is required",
+										validate: (value) =>
+											new Date(value) >=
+												new Date(watchStartDate) ||
+											"Cannot book from this date",
+									})}
+								/>
+							</div>
+							<div className="mb-3 form-label-group">
+								<select
+									className="form-select"
+									id="roomType"
+									name="roomType"
+									ref={register}
+								>
+									<option value="Single">Single Room</option>
+									<option value="Family">Family Room</option>
+									<option value="Deluxe">Deluxe Room</option>
+								</select>
+								<label
+									htmlFor="roomType"
+									className="form-label"
+								>
+									Select
+								</label>
+							</div>
+							<div className="mb-3">
+								<ButtonSpin spinner={spinner} name="Submit" />
+							</div>
+							<Alerts
+								status={alert.status}
+								setAlert={setAlert}
+								message={alert.message}
+								color={alert.color}
+							/>
+						</form>
+					</div>
+				</div>
+			</div>
+			<div className="col-6">
+				<div className="card">
+					<div className="card-body">
+						<h3>Room Rates:</h3>
+						<h5>Single: Php 800.00</h5>
+						<h5>Family: Php 1400.00</h5>
+						<h5>Deluxe: Php 2000.00</h5>
+					</div>
+				</div>
+			</div>
+		</div>
+	);
+};
+
+const UserInfo = ({ auth }) => {
+	const [data, setData] = useState({});
+	const history = useHistory();
+
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
-				const cookieValue = document.cookie
-					.split("; ")
-					.find((row) => row.startsWith("token"))
-					.split("=")[1];
-				const header = {
-					headers: { Authorization: `Bearer ${cookieValue}` },
-				};
-				const res = await axios.get("/api/rooms/booking", header);
-				console.log(res.data);
-				setData([...res.data]);
+				const { data } = await axios.get("/api/users/info");
+				setData({ ...data });
 			} catch (e) {
 				console.log(e);
 			}
 		};
 
 		fetchData();
-	}, [update]);
-	return (
-		<React.Fragment>
-			<table className="table table-borderless table-responsive table-hover m-0">
-				<thead>
-					<tr className="text-center">
-						<th>#</th>
-						<th>Room</th>
-						<th>Type</th>
-						<th>Check In</th>
-						<th>Check Out</th>
-						<th>Days</th>
-						<th>Invoice</th>
-						<th>Action</th>
-					</tr>
-				</thead>
-				<tbody>
-					{data.map((data, index) => (
-						<tr className="text-center" key={index}>
-							<td>{index + 1}</td>
-							<td>{data.room_name}</td>
-							<td>{data.room_type}</td>
-							<td>{data.startDate}</td>
-							<td>{data.endDate}</td>
-							<td>{data.duration}</td>
-							<td>Php {data.total}</td>
-							<td>
-								<Action
-									_id={data._id}
-									update={update}
-									setUpdate={setUpdate}
-								/>
-							</td>
-						</tr>
-					))}
-				</tbody>
-			</table>
-			<div>
-				<button
-					className="btn btn-sm w-25 btn-primary custom-btn"
-					onClick={() => setShow(true)}
-				>
-					Add Booking
-				</button>
-			</div>
-			<Modal show={show} close={setShow}>
-				<Booking update={update} setUpdate={setUpdate} method="post" />
-			</Modal>
-		</React.Fragment>
-	);
-};
+	}, []);
 
-const Action = ({ _id, update, setUpdate }) => {
-	const [show, setShow] = useState(false);
-	const deleteEntry = async () => {
-		try {
-			await axios({
-				method: "delete",
-				url: "/api/rooms/booking",
-				data: { _id },
-			});
-			setUpdate(update + 1);
-		} catch (e) {
-			console.log(e);
-		}
-	};
 	return (
-		<React.Fragment>
-			<Modal show={show} close={setShow}>
-				<Booking
-					update={update}
-					setUpdate={setUpdate}
-					method="put"
-					_id={_id}
-				/>
-			</Modal>
-			<ul className="list-inline m-0">
-				<li className="list-inline-item">
-					<button
-						className="btn btn-success btn-sm rounded-0"
-						type="button"
-						title="Edit"
-						onClick={() => setShow(true)}
-					>
-						Edit
-					</button>
-				</li>
-				<li className="list-inline-item">
-					<button
-						className="btn btn-danger btn-sm rounded-0"
-						type="button"
-						title="Delete"
-						onClick={() => deleteEntry()}
-					>
-						Remove
-					</button>
-				</li>
-			</ul>
-		</React.Fragment>
+		<div>
+			<h1>My Account</h1>
+			<h3>Name: {data.name}</h3>
+			<h3>Email: {data.email}</h3>
+			<h3>Created At: {moment.parseZone(data.createdAt).format("LL")}</h3>
+			<button
+				className="btn btn-primary w-25 custom-btn"
+				onClick={() => {
+					auth.signOut(() => {
+						document.cookie =
+							"token=; expires = Thu, 01 Jan 1970 00:00:00 GMT";
+						history.push("/");
+					});
+				}}
+			>
+				Logout
+			</button>
+		</div>
 	);
 };

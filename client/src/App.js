@@ -10,7 +10,7 @@ const Home = lazy(() => import("./components/page/Home"));
 const AdminDashboard = lazy(() => import("./components/page/AdminDashboard"));
 const ProtectedRoute = lazy(() => import("./components/ProtectedRoute"));
 const PageNotFound = lazy(() => import("./components/404"));
-const DashboardV2 = lazy(() => import("./components/page/Dashboard_v2"));
+const Dashboard = lazy(() => import("./components/page/Dashboard"));
 
 export default function App() {
   return (
@@ -22,7 +22,7 @@ export default function App() {
           <Route path="/sign-in" render={() => <SignIn auth={auth} />} />
           <Route path="/sign-up" render={() => <SignUp />} />
           <Route path="/admindashboard" render={() => <AdminDashboard />} />
-          <ProtectedRoute path="/dashboard" auth={auth} component={DashboardV2} />
+          <ProtectedRoute path="/dashboard" auth={auth} component={Dashboard} />
           <Route path="*" render={() => <PageNotFound />} />
         </Switch>
       </Suspense>

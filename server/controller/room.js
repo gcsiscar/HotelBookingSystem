@@ -1,5 +1,5 @@
 const Room = require("../models/Room");
-const { convertDate, parseDate } = require("../db/handleDate");
+const { convertDate, parseDate } = require("../utils/handleDate");
 
 const total = (room_type, duration) => {
     switch (room_type) {

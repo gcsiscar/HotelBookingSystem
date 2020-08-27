@@ -1,5 +1,5 @@
 const express = require("express");
-const authenticateUser = require("../db/auth");
+const authenticateUser = require("../utils/auth");
 
 const User = require("../controller/user");
 const Room = require("../controller/room");

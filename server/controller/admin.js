@@ -3,15 +3,19 @@ const User = require("../models/User");
 
 module.exports = {
 	addRoom: async (req, res) => {
-		const { name } = req.body;
+		const { name, roomType, rate } = req.body;
 		try {
-			const room = await Room.findOne({ name }).lean().exec();
+			const room = await Room.findOne({ name }).exec();
 			if (room) {
 				return res
 					.status(400)
 					.json({ message: "Room name must be unique" });
 			} else {
-				await Room.create(req.body).exec();
+				await Room.create({
+					name,
+					room_type: roomType,
+					rate,
+				});
 				return res
 					.status(201)
 					.json({ message: "Room created successfully" });
