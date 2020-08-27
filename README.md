@@ -116,7 +116,7 @@ This will help to ensure that room resources are used as fully-utilised as possi
 - React.js
 - Moment.js
 
-## Challenges and final thoughts
+## Challenges
 
 ### Challenges
 - Front End Design
