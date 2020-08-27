@@ -1,5 +1,5 @@
-# Room Booking System
-A room booking system built with MongoDB, Express, Node.js and ReactJS.
+# Hotel Booking System
+A Hotel booking system built with MongoDB, Express, Node.js and ReactJS.
 
 ## Table of Contents
 
@@ -95,9 +95,9 @@ Open in your browser and navigate to http://localhost:3000. You access the back-
 ## About project
 A web-based application that allows the user to login from anywhere to easily, accurately and quickly make room bookings.
 
-I designed the application to be an intuitive and simple, yet powerful way to navigate, analyse and create bookings. This ultimately enables the efficient use of resources.
+The application is designed to be intuitive and simple, yet powerful way to navigate, analyse and create bookings. This ultimately enables the efficient use of resources.
 
-This will help to ensure that room resources are used as fully-utilised as possible, whilst avoiding double-bookings and other common user frustrations. 
+This will help to ensure that room resources are used as fully-utilised as possible, while avoiding double-bookings and other common user frustrations. 
 
 
 ## Entity Relationship Diagram
