@@ -11,48 +11,46 @@ import ButtonSpin from "../utils/ButtonSpin";
 export default function AdminDashboard() {
 	return (
 		<div className="custom-center">
-			<div className="container h-100">
-				<div className="row h-100 align-items-center justify-content-center">
-					<div className="card mb-3">
-						<div className="card-body w-100">
-							<nav className="nav nav-tabs">
-								<NavLink
-									className="nav-link"
-									exact
-									to="/admindashboard"
-								>
-									Bookings
-								</NavLink>
-								<NavLink
-									className="nav-link"
-									exact
-									to="/admindashboard/user"
-								>
-									Users
-								</NavLink>
-								<NavLink
-									className="nav-link"
-									exact
-									to="/admindashboard/addroom"
-								>
-									Add Room
-								</NavLink>
-							</nav>
-							<Switch>
-								<Route exact path="/admindashboard">
-									<BookingTable />
-								</Route>
-								<Route exact path="/admindashboard/user">
-									<UserTable />
-								</Route>
-								<Route exact path="/admindashboard/addroom">
-									<AddRoom />
-								</Route>
-								<Route path="*">
-									<Redirect to="/" />
-								</Route>
-							</Switch>
-						</div>
+			<div className="container">
+				<div className="card h-100">
+					<div className="card-body w-100">
+						<nav className="nav nav-tabs">
+							<NavLink
+								className="nav-link"
+								exact
+								to="/admindashboard"
+							>
+								Bookings
+							</NavLink>
+							<NavLink
+								className="nav-link"
+								exact
+								to="/admindashboard/user"
+							>
+								Users
+							</NavLink>
+							<NavLink
+								className="nav-link"
+								exact
+								to="/admindashboard/addroom"
+							>
+								Add Room
+							</NavLink>
+						</nav>
+						<Switch>
+							<Route exact path="/admindashboard">
+								<BookingTable />
+							</Route>
+							<Route exact path="/admindashboard/user">
+								<UserTable />
+							</Route>
+							<Route exact path="/admindashboard/addroom">
+								<AddRoom />
+							</Route>
+							<Route path="*">
+								<Redirect to="/" />
+							</Route>
+						</Switch>
 					</div>
 				</div>
 			</div>

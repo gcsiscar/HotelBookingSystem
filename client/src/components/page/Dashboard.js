@@ -13,48 +13,32 @@ import ButtonSpin from "../utils/ButtonSpin";
 export default function Dashboard({ auth }) {
 	return (
 		<div className="custom-center">
-			<div className="container h-100">
-				<div className="row h-100 align-items-center justify-content-center">
-					<div className="card mb-3">
-						<div className="card-body w-100">
-							<nav className="nav nav-tabs">
-								<NavLink
-									className="nav-link"
-									exact
-									to="/dashboard"
-								>
-									Home
-								</NavLink>
-								<NavLink
-									className="nav-link"
-									exact
-									to="/dashboard/booking"
-								>
-									Booking
-								</NavLink>
-								<NavLink
-									className="nav-link"
-									exact
-									to="/dashboard/account"
-								>
-									Account
-								</NavLink>
-							</nav>
-							<Switch>
-								<Route exact path="/dashboard">
-									<Table />
-								</Route>
-								<Route exact path="/dashboard/booking">
-									<AddBooking />
-								</Route>
-								<Route exact path="/dashboard/account">
-									<UserInfo auth={auth} />
-								</Route>
-								<Route path="*">
-									<Redirect to="/" />
-								</Route>
-							</Switch>
-						</div>
+			<div className="container">
+				<div className="card h-100">
+					<div className="card-body w-100">
+						<nav className="nav nav-tabs">
+							<NavLink className="nav-link" exact to="/dashboard">
+								Home
+							</NavLink>
+							<NavLink
+								className="nav-link"
+								exact
+								to="/dashboard/booking"
+							>
+								Booking
+							</NavLink>
+						</nav>
+						<Switch>
+							<Route exact path="/dashboard">
+								<Table />
+							</Route>
+							<Route exact path="/dashboard/booking">
+								<AddBooking auth={auth} />
+							</Route>
+							<Route path="*">
+								<Redirect to="/" />
+							</Route>
+						</Switch>
 					</div>
 				</div>
 			</div>
@@ -250,7 +234,7 @@ const EditBooking = ({ update, setUpdate, _id }) => {
 	);
 };
 
-const AddBooking = ({ _id }) => {
+const AddBooking = ({ auth }) => {
 	const { register, handleSubmit, errors, watch } = useForm();
 
 	const watchStartDate = watch("startDate", Date.now());
@@ -290,12 +274,27 @@ const AddBooking = ({ _id }) => {
 		}
 		setSpinner(false);
 	});
+	const [data, setData] = useState({});
+	const history = useHistory();
+
+	useEffect(() => {
+		const fetchData = async () => {
+			try {
+				const { data } = await axios.get("/api/users/info");
+				setData({ ...data });
+			} catch (e) {
+				console.log(e);
+			}
+		};
+
+		fetchData();
+	}, []);
 	return (
 		<div className="row row-cols-2">
-			<div className="col-6">
+			<div className="col-4">
 				<div className="card">
 					<div className="card-header bg-primary text-white">
-						Featured
+						Add a booking
 					</div>
 					<div className="card-body">
 						<form onSubmit={onSubmit}>
@@ -361,8 +360,8 @@ const AddBooking = ({ _id }) => {
 					</div>
 				</div>
 			</div>
-			<div className="col-6">
-				<div className="card">
+			<div className="col-4">
+				<div className="card text-center">
 					<div className="card-body">
 						<h3>Room Rates:</h3>
 						<h5>Single: Php 800.00</h5>
@@ -371,45 +370,41 @@ const AddBooking = ({ _id }) => {
 					</div>
 				</div>
 			</div>
-		</div>
-	);
-};
+			<div className="col-4">
+				<div className="card text-center">
+					<div className="card-body">
+						<img
+							src="http://ssl.gstatic.com/accounts/ui/avatar_2x.png"
+							alt="avatar"
+							className="avatar"
+						/>
 
-const UserInfo = ({ auth }) => {
-	const [data, setData] = useState({});
-	const history = useHistory();
+						<h2>{data.name}</h2>
 
-	useEffect(() => {
-		const fetchData = async () => {
-			try {
-				const { data } = await axios.get("/api/users/info");
-				setData({ ...data });
-			} catch (e) {
-				console.log(e);
-			}
-		};
+						<p>
+							<strong>Email: </strong>
+							{data.email}
+						</p>
 
-		fetchData();
-	}, []);
-
-	return (
-		<div>
-			<h1>My Account</h1>
-			<h3>Name: {data.name}</h3>
-			<h3>Email: {data.email}</h3>
-			<h3>Created At: {moment.parseZone(data.createdAt).format("LL")}</h3>
-			<button
-				className="btn btn-primary w-25 custom-btn"
-				onClick={() => {
-					auth.signOut(() => {
-						document.cookie =
-							"token=; expires = Thu, 01 Jan 1970 00:00:00 GMT";
-						history.push("/");
-					});
-				}}
-			>
-				Logout
-			</button>
+						<p>
+							<strong>Created: </strong>{" "}
+							{moment.parseZone(data.createdAt).format("LL")}
+						</p>
+						<button
+							className="btn btn-primary w-50 custom-btn"
+							onClick={() => {
+								auth.signOut(() => {
+									document.cookie =
+										"token=; expires = Thu, 01 Jan 1970 00:00:00 GMT";
+									history.push("/");
+								});
+							}}
+						>
+							Logout
+						</button>
+					</div>
+				</div>
+			</div>
 		</div>
 	);
 };

@@ -7,6 +7,9 @@ body {
 	background-color: #f8f8ff !important;
 }
 
+.avatar {
+	border-radius: 50%;
+}
 /*General Use*/
 .custom-center {
 	height: 90vh;
