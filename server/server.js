@@ -1,19 +1,25 @@
-require("dotenv").config();
-require("./utils/db").init();
+const mongoose = require("mongoose");
+const dotenv = require("dotenv");
+dotenv.config({
+  path: "./config.env",
+});
 
-const express = require("express");
-const cors = require("cors");
-// require('./models/seed');
-const server = express();
+const app = require("./app");
 
-server.use(cors());
-server.use(express.json());
-server.use(express.urlencoded({ extended: false }));
+//Connect to DB
+const database = process.env.DATABASE;
+mongoose
+  .connect(database, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useFindAndModify: false,
+  })
+  .then(() => console.log("Connected to Database"))
+  .catch((err) => console.error(err));
 
-const routes = require("./routes/routes");
-
-server.use("/api", routes);
-
-const PORT = process.env.PORT || 5000;
-
-server.listen(PORT, () => console.log(`Server started at localhost:${PORT}`));
+//Start the server
+const port = process.env.PORT;
+const host = process.env.HOST;
+app.listen(port, host, () => {
+  console.log(`Server started at http://${host}:${port}`);
+});
